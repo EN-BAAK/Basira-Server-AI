@@ -1,5 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from config.config import settings 
+from config import settings 
 
 class LLM:
     def __init__(self, model=None):

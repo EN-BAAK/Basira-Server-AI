@@ -21,7 +21,6 @@ def load_all_pdfs(folder_path):
     all_documents = []
 
     for pdf_file in folder.glob("*.pdf"):
-        print(f"Loading: {pdf_file.name}")
         documents = load_pdf(pdf_file)
         all_documents.extend(documents)
 

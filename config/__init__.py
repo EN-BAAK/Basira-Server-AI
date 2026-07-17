@@ -1,5 +1,7 @@
-from .config import settings;
+from .config import settings, models, client;
 
 __all__ = [
-    "settings"
+    "settings",
+    "models",
+    "client"
 ]

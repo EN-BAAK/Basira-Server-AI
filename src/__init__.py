@@ -1,5 +1,6 @@
-from .agents import RAGPipeline
+from .agents import RAG, text_to_sql_pipeline
 
 __all__ = [
-    "RAGPipeline"
+    "RAG",
+    "text_to_sql_pipeline"
 ]

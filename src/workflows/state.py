@@ -1,5 +1,5 @@
 from typing import TypedDict, List
-from src.api.schemas import AgentStep
+from src.apis.schemas import AgentStep
 
 class AgentState(TypedDict):
     conversation_id: str
