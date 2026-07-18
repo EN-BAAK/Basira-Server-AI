@@ -75,3 +75,28 @@ def clean_asker_output(text: str) -> dict:
             pass
 
     return {"sub_questions": []}
+
+def clean_supervisor_output(text: str) -> dict:
+    if not text:
+        return {"intent": "OUT_OF_SCOPE", "reasoning": "Empty input"}
+    
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    text = re.sub(r"```json", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"```", "", text)
+    text = text.strip()
+    
+    try:
+        data = json.loads(text)
+        if "intent" in data:
+            return data
+    except json.JSONDecodeError:
+        pass
+        
+    json_match = re.search(r"\{.*\}", text, re.DOTALL)
+    if json_match:
+        try:
+            return json.loads(json_match.group(0))
+        except json.JSONDecodeError:
+            pass
+            
+    return {"intent": "OUT_OF_SCOPE", "reasoning": "Failed to parse supervisor output"}

@@ -1,5 +1,5 @@
 from config import  models
-from src.prompts.asker import QUESTION_BREAKER_PROMPT
+from src.prompts import QUESTION_BREAKER_PROMPT
 from src.services import load_embedding_vector, search_in_vector, clean_asker_output
 from src.tools import ghaumah_llm_model_response as llm_model_response
 
