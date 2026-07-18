@@ -1,5 +1,5 @@
-from .vector_store import VectorStore
-from .rag_llm import LLM
+from .vector_store import VectorStore, build_embedding_vector_store, load_embedding_vector, search_in_vector
+from .rag_prof_llm import LLM
 from .embeddings import EmbeddingModel
 from .table_operations import get_schema
 from .sql_generator import llm_selection_schema, llm_plan_sql, llm_generate_sql, llm_review_sql
@@ -15,5 +15,8 @@ __all__ = [
     "llm_plan_sql",
     "llm_generate_sql",
     "llm_review_sql",
-    "execute_query"
+    "execute_query",
+    "build_embedding_vector_store",
+    "load_embedding_vector",
+    "search_in_vector"
 ]
