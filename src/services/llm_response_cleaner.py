@@ -46,3 +46,32 @@ def clean_sql_output(text: str) -> str:
         return ""
 
     return text
+
+def clean_asker_output(text: str) -> dict:
+    if not text:
+        return {"sub_questions": []}
+
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    
+    text = re.sub(r"```json", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"```", "", text)
+    
+    text = text.strip()
+
+    try:
+        data = json.loads(text)
+        if "sub_questions" in data and isinstance(data["sub_questions"], list):
+            return data
+    except json.JSONDecodeError:
+        pass
+
+    json_match = re.search(r"\{.*\}", text, re.DOTALL)
+    if json_match:
+        try:
+            data = json.loads(json_match.group(0))
+            if "sub_questions" in data and isinstance(data["sub_questions"], list):
+                return data
+        except json.JSONDecodeError:
+            pass
+
+    return {"sub_questions": []}
