@@ -100,3 +100,16 @@ def clean_supervisor_output(text: str) -> dict:
             pass
             
     return {"intent": "OUT_OF_SCOPE", "reasoning": "Failed to parse supervisor output"}
+
+def clean_response_output(text: str) -> str:
+    if not text:
+        return ""
+
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    
+    text = re.sub(r"```text", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"```", "", text)
+    
+    text = text.strip()
+    
+    return text

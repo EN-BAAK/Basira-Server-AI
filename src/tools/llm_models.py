@@ -16,7 +16,7 @@ def gemini_llm_model_response(prompt):
         model=settings.GEMINI_MODEL,
         google_api_key=settings.GEMINI_API_KEY,
         temperature=0.2,
-        max_tokens=settings.MAX_TOKENS*3
+        max_tokens=settings.MAX_TOKENS*10
     )
 
     response = client.invoke(prompt)

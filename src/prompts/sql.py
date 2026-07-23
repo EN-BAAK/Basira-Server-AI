@@ -2,7 +2,7 @@ import json
 
 def build_sql_prompt(question, schema, plan=""):
     return f"""
-        You are a SQL expert.
+        You are an expert PostgreSQL SQL engineer.
         
         Database: PostgreSQL
 
@@ -22,7 +22,7 @@ def build_sql_prompt(question, schema, plan=""):
         - Use correct tables and columns
         - Output ONLY SQL
         - Single line only
-        - PostgreSQL Specific Case-Sensitivity Rule: PostgreSQL converts unquoted identifiers to lowercase. Therefore, any table or column name containing uppercase letters (e.g., camelCase like "productId" or "colorId") MUST be enclosed in double quotes (e.g., product_colors."productId"). Never lowercase them.
+        - PostgreSQL Specific Case-Sensitivity Rule: PostgreSQL converts unquoted identifiers to lowercase. Therefore, any table or column name containing uppercase letters (e.g., camelCase like "productId" or "colorId") MUST be enclosed in double quotes (e.g., product_colors."productId"), (e.g. 2, products."imgUrl"). Never lowercase them.
 
         SQL:
         """

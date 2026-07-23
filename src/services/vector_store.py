@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 from src.utils import load_all_pdfs, create_chunks
-from src.services import EmbeddingModel
+from .embeddings import EmbeddingModel
 
 class VectorStore:
     def __init__(self, dimension):

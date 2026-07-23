@@ -1,22 +1,14 @@
+import re
 from langgraph.graph import StateGraph, END
 from src.workflows.state import AgentState
-from src.agents import rag_prof_pipeline, text_to_sql_pipeline, supervisor_pipeline, asker_pipeline
-
-def parse_supervisor_intent(text: str) -> str:
-    text = text.upper()
-    if "RAG_ONLY" in text:
-        return "RAG_ONLY"
-    if "SQL_ONLY" in text:
-        return "SQL_ONLY"
-    if "MIXED_ASKER" in text:
-        return "MIXED_ASKER"
-    return "OUT_OF_SCOPE"
+from src.agents import (rag_prof_pipeline, text_to_sql_pipeline, supervisor_pipeline, asker_pipeline, response_agent_pipeline)
 
 def supervisor_node(state: AgentState) -> dict:
     steps = state.get("steps", [])
 
-    raw_answer = supervisor_pipeline(question=state["question"], model=state["supervisor_model"])
-    intent = parse_supervisor_intent(raw_answer)
+    supervisor_result = supervisor_pipeline(question=state["question"], model=state["supervisor_model"])
+    
+    intent = supervisor_result.get("intent", "OUT_OF_SCOPE").upper()
 
     final_answer = ""
     next_agent = intent
@@ -30,7 +22,7 @@ def supervisor_node(state: AgentState) -> dict:
     new_step = {
         "agent": "Supervisor",
         "action": "Routing",
-        "description": f"The question was analyzed and routed to: {next_agent}",
+        "description": f"The question was analyzed and routed to: {next_agent}. Reason: {supervisor_result.get('reasoning', '')}",
     }
 
     return {
@@ -62,33 +54,40 @@ def rag_node(state: AgentState) -> dict:
 def sql_node(state: AgentState) -> dict:
     steps = state.get("steps", [])
 
-    result = text_to_sql_pipeline(
+    raw_result = text_to_sql_pipeline(
         question=state["question"],
         tables=state["tables"],
         generator_model=state["generator_query_model"],
         selection_model=state["selection_table_model"]
     )
 
+    formatted_answer = response_agent_pipeline(
+        main_question=state["question"], 
+        db_input=raw_result
+    )
+
     new_step = {
         "agent": "SQL Agent",
-        "action": "Query Execution",
-        "description": "The requested live company data and metrics were successfully retrieved from the database tables.",
+        "action": "Query Execution & Formatting",
+        "description": "The requested live company data was retrieved and formatted professionally.",
     }
 
-    return {"final_answer": result, "steps": steps + [new_step]}
+    return {"final_answer": formatted_answer, "steps": steps + [new_step]}
 
 def asker_node(state: AgentState) -> dict:
     steps = state.get("steps", [])
 
-    sub_questions = asker_pipeline(
+    sub_questions_data = asker_pipeline(
         question=state["question"],
         vector_db=state["vector_db_path"],
         top_k=state["top_k"],
         model=state["asker_model"],
     )
 
-    if isinstance(sub_questions, list):
-        sub_questions = sub_questions[:3]
+    if isinstance(sub_questions_data, dict) and "sub_questions" in sub_questions_data:
+        sub_questions = sub_questions_data["sub_questions"][:3]
+    elif isinstance(sub_questions_data, list):
+        sub_questions = sub_questions_data[:3]
     else:
         sub_questions = [state["question"]]
 
@@ -102,13 +101,20 @@ def asker_node(state: AgentState) -> dict:
             selection_model=state["selection_table_model"]
         )
 
+    asker_bundle = {"database_responses": combined_db_results}
+
+    formatted_answer = response_agent_pipeline(
+        main_question=state["question"], 
+        db_input=asker_bundle
+    )
+
     new_step = {
         "agent": "Asker Agent",
-        "action": "Deconstruction & Query",
-        "description": f"The complex question was decomposed into {len(sub_questions)} sub-questions, and their financial data was retrieved.",
+        "action": "Deconstruction, Query & Formatting",
+        "description": f"The complex question was decomposed into {len(sub_questions)} sub-questions, and the generated results were styled professionally.",
     }
 
-    return {"final_answer": combined_db_results, "steps": steps + [new_step]}
+    return {"final_answer": formatted_answer, "steps": steps + [new_step]}
 
 def route_next(state: AgentState) -> str:
     target = state.get("next_agent")

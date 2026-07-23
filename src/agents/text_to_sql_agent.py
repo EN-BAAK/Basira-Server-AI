@@ -6,4 +6,4 @@ def text_to_sql_pipeline(question, tables, selection_model=models.Qwen3, generat
     schema = select_schema(question, tables, model=selection_model)
     sql = generate_sql_from_agents(question, schema, True, model=generator_model)
     result = execute_query(sql)
-    return result;
+    return (result, sql);
